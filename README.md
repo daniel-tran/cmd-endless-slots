@@ -13,7 +13,7 @@ The game currently takes a single command that controls how fast the game plays.
 cmd-endless-slots.exe 1000
 ```
 
-You can also modify variables such as `items` and `rows` to change how the game plays.
+You can also modify the global variables such as `ITEMS` and `ROWS` to change how the game plays.
 
 # How to quit
 Press Control + C on your keyboard.

@@ -8,6 +8,19 @@ import (
     "math/rand/v2"
 )
 
+// These global variables can be modified as needed
+var ITEMS = [][]string{
+    // These are organised from the rightmost element being the top to leftmost being the bottom
+    // Columns are organised from the first being the leftmost column to last being the rightmost column
+    {"♣", "♠", "♦", "♥"},
+    {"♥", "♦", "♠", "♣"},
+    {"♦", "♥", "♣", "♠"},
+    {"♣", "♠", "♦", "♥"},
+    {"♥", "♦", "♠", "♣"} }
+var COLUMNS = len(ITEMS)
+// This should be set between 1 and N inclusive, where N is the smallest length of all elements in ITEMS
+const ROWS = 3
+
 func cls() {
     // For Windows, commands have to be spawned in a separate cmd instance, refer to https://stackoverflow.com/a/19290028
     var cls = exec.Command("cmd", "/c", "cls")
@@ -45,20 +58,9 @@ func main() {
     }
     duration, _ := time.ParseDuration(speed + "ms")
     
-    // These are organised from the rightmost element being the top to leftmost being the bottom
-    // Columns are organised from the first being the leftmost column to last being the rightmost column
-    var items = [][]string{
-        {"♣", "♠", "♦", "♥"},
-        {"♥", "♦", "♠", "♣"},
-        {"♦", "♥", "♣", "♠"},
-        {"♣", "♠", "♦", "♥"},
-        {"♥", "♦", "♠", "♣"} }
-    var columns = len(items)
-    // This will loop around the values for a particular column if it is larger than a column's item count
-    var rows = 3
     var values = [][]int{}
     var index = 0
-    var randIndex = rand.IntN(len(items[index]))
+    var randIndex = rand.IntN(len(ITEMS[index]))
     var previousResult = ""
     
     var input = make(chan string, 1)
@@ -68,19 +70,19 @@ func main() {
         select {
             case i := <-input:
                 fmt.Println(i)
-                values = append(values, getSlotResult(items[index], rows, randIndex))
-                randIndex = rand.IntN(len(items[index])) // Re-randomise the index to prevent the users from predicting the next column easily
+                values = append(values, getSlotResult(ITEMS[index], ROWS, randIndex))
+                randIndex = rand.IntN(len(ITEMS[index])) // Re-randomise the index to prevent the users from predicting the next column easily
                 index++
                 
-                if index >= columns {
+                if index >= COLUMNS {
                     // Round has completed, should reset for the next round
                     index = 0
 
                     // Inform the user of what the last slot was, as pausing for any fixed amount of time on a command line is difficult as is
                     previousResult = ""
-                    for y := 0; y < rows; y++ {
+                    for y := 0; y < ROWS; y++ {
                         for x := 0; x < len(values); x++ {
-                            previousResult += items[x][values[x][rows - 1 - y]]
+                            previousResult += ITEMS[x][values[x][ROWS - 1 - y]]
                         }
                         previousResult += "\n"
                     }
@@ -90,21 +92,21 @@ func main() {
                 }
             case <-time.After(duration):
                 cls()
-                randIndex = (randIndex + 1) % len(items[index])
+                randIndex = (randIndex + 1) % len(ITEMS[index])
                 if len(previousResult) > 0 {
                     fmt.Printf("Previous result:\n%v\n", previousResult)
                     fmt.Println("-----")
                 }
                 
                 // Print the value of the user's current slot results as well as the current active column
-                for y := 0; y < rows; y++ {
+                for y := 0; y < ROWS; y++ {
                     // Print row by row for each column that has a fixed value from previous pulls
                     for x := 0; x < len(values); x++ {
-                        fmt.Print(items[x][values[x][rows - 1 - y]])
+                        fmt.Print(ITEMS[x][values[x][ROWS - 1 - y]])
                     }
                     // Slots are drawn from index N...0 in the direction of top to bottom (in the slice, it's represented as right to left)
                     // This ensures the slots are going "downward"
-                    fmt.Println(items[index][(len(items[index]) + (randIndex - y)) % len(items[index])])
+                    fmt.Println(ITEMS[index][(len(ITEMS[index]) + (randIndex - y)) % len(ITEMS[index])])
                 }
         }
     }
